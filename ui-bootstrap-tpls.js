@@ -2,7 +2,7 @@
  * angular-ui-bootstrap
  * http://angular-ui.github.io/bootstrap/
 
- * Version: 0.13.4 - 2015-09-03
+ * Version: 0.13.4.1 - 2015-10-06
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.transition","ui.bootstrap.typeahead"]);
@@ -3370,6 +3370,7 @@ angular.module('ui.bootstrap.tooltip', ['ui.bootstrap.position', 'ui.bootstrap.b
           'animation="animation" '+
           'is-open="isOpen"'+
           'origin-scope="origScope" '+
+          'style="visibility: hidden; display: block;"'+
           '>'+
         '</div>';
 
@@ -3392,12 +3393,13 @@ angular.module('ui.bootstrap.tooltip', ['ui.bootstrap.position', 'ui.bootstrap.b
             var isOpenExp = angular.isDefined(attrs[prefix + 'IsOpen']) ? $parse(attrs[prefix + 'IsOpen']) : false;
 
             var positionTooltip = function() {
-              if (!tooltip) { return; }
+              // check if tooltip exists and is not empty
+              if (!tooltip || !tooltip.html()) { return; }
 
               if (!positionTimeout) {
                 positionTimeout = $timeout(function() {
                   // Reset the positioning and box size for correct width and height values.
-                  tooltip.css({ top: 0, left: 0, width: 'auto', height: 'auto' });
+                  tooltip.css({ top: 0, left: 0, width: 'auto', height: 'auto', visibility: 'hidden' });
 
                   var ttBox = $position.position(tooltip);
                   var ttCss = $position.positionElements(element, tooltip, ttScope.placement, appendToBody);
@@ -3406,6 +3408,8 @@ angular.module('ui.bootstrap.tooltip', ['ui.bootstrap.position', 'ui.bootstrap.b
 
                   ttCss.width = ttBox.width + 'px';
                   ttCss.height = ttBox.height + 'px';
+
+                  ttCss.visibility = 'visible';
 
                   // Now set the calculated positioning and size.
                   tooltip.css(ttCss);
@@ -3485,13 +3489,15 @@ angular.module('ui.bootstrap.tooltip', ['ui.bootstrap.position', 'ui.bootstrap.b
                 ttScope.$apply(); // digest required as $apply is not called
               }
 
-              tooltip.css({ display: 'block' });
-
               positionTooltip();
             }
 
             // Hide the tooltip popup element.
             function hide() {
+              if (!ttScope) {
+                return;
+              }
+
               // First things first: we don't show it anymore.
               ttScope.isOpen = false;
               if (isOpenExp) {
